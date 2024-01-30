@@ -1,6 +1,6 @@
 import itertools
 
-from amaranth import *
+from amaranth import Elaboratable, Module, Signal, Cat
 from amaranth.build import ResourceError
 
 

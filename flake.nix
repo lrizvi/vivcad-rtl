@@ -1,38 +1,56 @@
 {
-  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/*.tar.gz";
-  outputs = { self, nixpkgs }:
-    let
-      supportedSystems = [ "x86_64-linux" ];
-      forEachSupportedSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f {
-        pkgs = import nixpkgs { inherit system; };
+  description = "";
+  
+  inputs = {
+    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    poetry2nix = {
+      url = "github:nix-community/poetry2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { self, nixpkgs, flake-utils, poetry2nix }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; })
+          mkPoetryApplication defaultPoetryOverrides;
+        pypkgs-build-requirements = {
+          cocotb-test = [ "setuptools" ];
+          pytest-mypy = [ "attrs" ];
+          pytest-ruff = [ "poetry" "poetry-dynamic-versioning" ];
+          sorcery = [ "setuptools" ];
+        };
+      in {
+        packages = {
+          pyproject = mkPoetryApplication {
+            projectDir = self;
+            overrides = defaultPoetryOverrides.extend (self: super:
+              builtins.mapAttrs (package: build-requirements:
+                (builtins.getAttr package super).overridePythonAttrs (old: {
+                  buildInputs = (old.buildInputs or [ ]) ++ (builtins.map (pkg: if builtins.isString pkg then builtins.getAttr pkg super else pkg) build-requirements);
+                })
+              ) pypkgs-build-requirements
+            );
+          };
+          default = self.packages.${system}.pyproject;
+        };
+
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [ self.packages.${system}.pyproject ];
+          packages = with pkgs; [
+            poetry
+            yosys
+            nextpnr
+            gtkwave
+            verilator
+            symbiyosys
+            boolector
+            yices
+            icestorm
+            openfpgaloader
+          ];
+        };
       });
-    in
-      {
-        devShells = forEachSupportedSystem ({ pkgs }:
-          let
-          in
-            {
-              default = pkgs.mkShell {
-                packages = with pkgs; [
-                  python311       # Python 3.11
-                  yosys           # RTL synthesis
-                  symbiyosys      # Yosys-based formal verification flow
-                  boolector       # SMT solver
-                  nextpnr         # RTL synthesis to FPGA configuration
-                  icestorm        # Lattice iCE40 FPGA utils
-                  openfpgaloader  # Universal FPGA + flash programmer
-                  openocd         # On-chip debugging
-                  gtkwave         # Wave and logic analyzer
-                  verilator       # Verilog simulator
-                ] ++ (with pkgs.python311Packages; [
-                  amaranth        # HDL toolchain for Python
-                  amaranth-boards # Amaranth PCBA feature support
-                  cocotb          # Python testbench library
-                  numpy           # Numeric calculations
-                  scipy           # Scientific calculations
-                  matplotlib      # Plotting
-                ]);
-              };
-            });
-      };
 }

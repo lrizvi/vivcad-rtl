@@ -1,13 +1,13 @@
-# Emacs
+dist/
+build/
+sim_build/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.tox/
 *~
 \#*\#
-
-# Python
-__pycache__/
-
-# Tests
 *.vcd
 *.gtkw
-
-# Builds
-build
