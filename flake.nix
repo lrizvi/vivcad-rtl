@@ -15,7 +15,7 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; })
-          mkPoetryApplication defaultPoetryOverrides;
+          mkPoetryEnv defaultPoetryOverrides;
         pypkgs-build-requirements = {
           cocotb-test = [ "setuptools" ];
           pytest-mypy = [ "attrs" ];
@@ -24,7 +24,7 @@
         };
       in {
         packages = {
-          pyproject = mkPoetryApplication {
+          pyproject = mkPoetryEnv {
             projectDir = self;
             overrides = defaultPoetryOverrides.extend (self: super:
               builtins.mapAttrs (package: build-requirements:
