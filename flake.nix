@@ -21,6 +21,7 @@
           pytest-mypy = [ "attrs" ];
           pytest-ruff = [ "poetry" "poetry-dynamic-versioning" ];
           sorcery = [ "setuptools" ];
+          vivcad-ciccomp = [ "setuptools" "wheel" "pybind11" ];
         };
       in {
         packages = {
@@ -50,6 +51,10 @@
             yices
             icestorm
             openfpgaloader
+
+            # vivcad-ciccomp
+            mpfr
+            eigen
           ];
         };
       });
