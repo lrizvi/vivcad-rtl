@@ -11,13 +11,13 @@ packages = [
 
 [tool.poetry.dependencies]
 python          = "^3.10"
+pybind11        = "^2.11.1"
 sorcery         = "^0.2.2"
 numpy           = "^1.26.3"
 scipy           = "^1.12.0"
 matplotlib      = "^3.8.2"
 amaranth        = "^0.4.1"
 amaranth-boards = {git = "https://github.com/amaranth-lang/amaranth-boards.git"}
-vivcad-ciccomp = {git = "https://github.com/lrizvi/vivcad-ciccomp"}
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.12.1"
@@ -79,6 +79,7 @@ requires = [
     "poetry-core",
     "setuptools",
     "wheel",
+    "pybind11   >= 2.11.1",
     "sorcery    >= 0.2.2",
     "numpy      >=1.26.3",
     "scipy      >= 1.12.0",
